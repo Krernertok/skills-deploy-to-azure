@@ -81,12 +81,18 @@ jobs:
           login-server: ${{env.IMAGE_REGISTRY_URL}}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Convert repository to lowercase
+        id: lowercase_conversion
+        run: |
+          repo=$(echo "${GITHUB_REPOSITORY}" | tr A-Z a-z)
+          echo "repo=${repo}" >> "${GITHUB_OUTPUT}"
 
       - name: Deploy web app container
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{env.AZURE_WEBAPP_NAME}}
-          images: ${{env.IMAGE_REGISTRY_URL}}/${{ github.repository }}/${{env.DOCKER_IMAGE_NAME}}:${{ github.sha }}
+          images: ${{env.IMAGE_REGISTRY_URL}}/${{ steps.lowercase_conversion.outputs.repo }}/${{env.DOCKER_IMAGE_NAME}}:${{ github.sha }}
 
       - name: Azure logout via Azure CLI
         uses: azure/CLI@v1
